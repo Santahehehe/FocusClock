@@ -1,0 +1,30 @@
+前端:
+1.當前端向某url路徑去做request請求時並不會跳轉頁面，除非下window.location()
+
+
+
+----------------------------------------------------------------------------
+前後端連接
+1.
+step1.不能直接點開.html檔案來運行，而是要透過本地端伺服器在端口上運行，這邊選擇使用Node.js
+	。step1:下載Node.js
+	。step2:在終端機檢查是否安裝完成:node -v
+	。step3:cd 到運行的資料夾
+	。step4:安裝http-server :在終端機下指令:npm install -g http-server
+	。step5:啟動伺服器並選擇端口: 在終端機打 http-server -p 3000(我是選3000，因為好像其他框架都是預設這個port)
+step2.更改Spring Boot設定，要讓它開放跨網域請求
+	。step1:建立WebConfig類別，照抄chatgpt全局設置方法
+	。因為在前端發送Post等請求方法時會先發送一個option是測試後端會不會回應，這個WebConfig class就是在做這件事
+
+2.關閉node.js
+step1:終端機指令tasklist /FI "IMAGENAME eq node.exe"檢查node.js還在運行哪個程式
+step2:終端機指令taskkill /F /pid {該指令pid}
+
+
+----------------------------------------------------------------------------
+後端
+1.Spring Boot連線資料庫:
+	step1:先到pom.xml  加入對應的驅動程式(參考資料:https://ithelp.ithome.com.tw/articles/10337137)
+	step2:到Spring Boot設定檔(.properties)去設定資料庫連線資料
+	step3:開始用Dao去進行實際的連接
+
