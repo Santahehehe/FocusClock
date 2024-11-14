@@ -18,7 +18,7 @@ public class TimeBlockController {
 	private TimeBlockService timeBlockService;
 	
 	//接受post請求做新增TimeBlock的動作
-	@PostMapping("/index")
+	@PostMapping("/save-time")
 	//用一個TimeBlock類別的物件去接前端傳過來要insert的資料
 	public String insert(@RequestBody TimeBlock timeBlock) {
 		return timeBlockService.createNew_TimeBlock(timeBlock);
@@ -26,7 +26,7 @@ public class TimeBlockController {
 	
 	
 	//接受Put請求做timeBlock的修改動作
-	@PutMapping("/index/{account}")
+	@PutMapping("/save-time/{account}")
 	public String revise(@PathVariable String account,
 						@RequestBody TimeBlock timeBlock) {
 		//RequestBody中已經包含

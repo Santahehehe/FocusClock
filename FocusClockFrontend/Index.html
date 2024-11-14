@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Toggle Play/Stop Button with Timer and Record</title>
+    <title>專注力時鐘</title>
     <style>
         /* 基本樣式 */
         body {
@@ -287,7 +287,7 @@
                 button.classList.add('active');//把toggleButton變成toggleButton.active以啟動CSS改變計時按鈕樣式
                 button.innerHTML = '&#9632; 停止'; //把計時按鈕改成停止圖示
                 // 用Post請求發送到後端以在focustime資料庫的time table建立新的data row(時間戳記)
-                fetch('http://localhost:8080/index', {
+                fetch('http://localhost:8080/save-time', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -370,6 +370,7 @@
 
         // 保存紀錄事件
         saveRecordButton.addEventListener('click', () => {
+            //取得在(填寫分數和備註視窗)中的分數和備註值
             const focusScore = document.getElementById('focusScore').value;
             const note = document.getElementById('note').value;
             /*專注力分數和備註不可為空
@@ -378,12 +379,14 @@
                 return;
             }
             */
+            
+            //把取得的分數和備註值顯示到index頁面的紀錄版上
             focusScoreRecord.textContent = focusScore;
             noteRecord.textContent = note;
 
             // 準備資料並用put請求發送到後端 更新前面建立的data row
             //還沒做會員登入系統，先用大胃斯坦代替
-            fetch('http://localhost:8080/index/大胃斯坦', {
+            fetch('http://localhost:8080/save-time/大胃斯坦', {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
