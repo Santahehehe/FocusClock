@@ -182,48 +182,65 @@
         
 
         // 點擊登入頁面的登入按鈕 去測試登入
+        // 如果帳號密碼不對回傳false，正確回傳true
         loginBtn.addEventListener('click', () => {
             //從註冊互動視窗取得要發出請求的參數: 帳號&密碼
             const account = document.getElementById('username').value;
             const password = document.getElementById('password').value;
             console.log(account);
             console.log(password);
-            //對後端發出Post請求
-            fetch('http://localhost:8080/login', {
-                method: 'Post',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    account:account, 
-                    md5password:password,
+            if(account!=""&&password!=""){
+                //對後端發出Post請求
+                fetch('http://localhost:8080/login', {
+                    method: 'Post',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        account:account, 
+                        md5password:password,
+                    })
                 })
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log(data);
-                if(data === true){
-                    //登入成功
-                    console.log("登入成功");
-                    //把登入頁面的欄位清空
-                    document.getElementById('username').value = "";
-                    document.getElementById('password').value = "";
-                    
-                    //在自訂通知欄位跳出登入成功字樣
-                    document.getElementById('notification').innerText = "登入成功";
-                    showCustomNotification();
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    if(data === true){
+                        //登入成功
+                        console.log("登入成功");
+                        //localStorage中設定username
+                        localStorage.setItem("username",document.getElementById('username').value);
+                        console.log("登入使用者為:"+localStorage.getItem("username"));
+                        
 
-                }else{
-                    //登入失敗
-                    console.log("登入失敗");
-                    //在自訂通知欄位跳出帳號或密碼錯誤字樣
-                    document.getElementById('notification').innerText = "帳號或密碼錯誤";
-                    showCustomNotification();
-                }
-            })
-            .catch(error => {
-                console.error('Error', error);
-            });
+                        //把登入頁面的欄位清空
+                        document.getElementById('username').value = "";
+                        document.getElementById('password').value = "";
+                    
+                        //在自訂通知欄位跳出登入成功字樣
+                        document.getElementById('notification').innerText = "登入成功";
+                        showCustomNotification();
+
+                        //重新導向index.html
+                        window.location.href = "./index.html";
+                    
+                    }else{
+                        //登入失敗
+                        console.log("登入失敗");
+                        //在自訂通知欄位跳出帳號或密碼錯誤字樣
+                        document.getElementById('notification').innerText = "帳號或密碼錯誤";
+                        showCustomNotification();
+                    
+                    }
+                })
+                .catch(error => {
+                    console.error('Error', error);
+                });
+            }else{
+                //在自訂通知欄位跳出請輸入帳號密碼
+                document.getElementById('notification').innerText = "請輸入帳號密碼";
+                showCustomNotification();
+            }
+            
         })
 
         // 點擊登入頁面的註冊按鈕時顯示註冊互動視窗
@@ -246,47 +263,55 @@
             console.log("帳號:"+account);
             console.log("密碼:"+password);
             console.log(createTime.toLocaleString());
-
-            //對後端發出請求
-            fetch('http://localhost:8080/register', {
-                method: 'Post',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    account:account, 
-                    md5password:password,
-                    createTime: createTime.toLocaleString()
+            if(account!=""&&password!=""){
+                //對後端發出請求
+                fetch('http://localhost:8080/register', {
+                    method: 'Post',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        account:account, 
+                        md5password:password,
+                        createTime: createTime.toLocaleString()
+                    })
                 })
-            })
-            .then(reponse=> {
-                console.log('註冊成功:',reponse);
-                //把註冊互動視窗欄位清空
-                document.getElementById('newUsername').value = "";
-                document.getElementById('newPassword').value = "";
+                .then(reponse=> {
+                    console.log('註冊成功:',reponse);
+                    //把註冊互動視窗欄位清空
+                    document.getElementById('newUsername').value = "";
+                    document.getElementById('newPassword').value = "";
                 
-                registerModal.style.display = 'none'; // 隱藏註冊互動視窗
-            })
-            .catch(error => {
-                console.error('儲存資料時出錯:', error);
-            });
+                    registerModal.style.display = 'none'; // 隱藏註冊互動視窗
+                })
+                .catch(error => {
+                    console.error('儲存資料時出錯:', error);
+                });
 
+            }else{
+                //註冊失敗
+                console.log("註冊失敗");
+                //在自訂通知欄位跳出有欄位空白
+                document.getElementById('notification').innerText = "註冊失敗，帳號或密碼空白";
+                showCustomNotification();
+            }
+            
             
         });
 
+        //用來顯示通知欄位
         function showCustomNotification() {
-    const notification = document.getElementById("notification");
-    notification.style.display = "block";
-    notification.style.opacity = "1";
+            const notification = document.getElementById("notification");
+            notification.style.display = "block";
+            notification.style.opacity = "1";
 
-    // 設定3秒後自動隱藏
-    setTimeout(() => {
-        notification.style.opacity = "0";
-        setTimeout(() => notification.style.display = "none", 500); // 等待過渡結束再隱藏
-    }, 3000);
-}
+            // 設定3秒後自動隱藏
+            setTimeout(() => {
+                notification.style.opacity = "0";
+                setTimeout(() => notification.style.display = "none", 500); // 等待過渡結束再隱藏
+            }, 3000);
+        }
 
-        //點擊登入按鈕把登入頁面的資訊拿去登入，如果帳號密碼不對回傳false，正確回傳true
         
 
 

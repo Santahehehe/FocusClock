@@ -9,7 +9,12 @@
 	。let允許重新賦值 且 允許聲明時不賦值
 	。const不允許重新賦值 且 聲明時必須賦值
 
+3.localStorage.setItem("username",null);
+  表示localStorage.getItem("username")的值是"null"而不是回傳null
 
+4. .value適用在表單元素，innerText跟textContent可用來獲取<span>內容
+	。.innerText 會返回元素的可見文本內容，並且會受到 CSS 樣式（如隱藏元素）的影響。
+	。.textContent 會返回元素的所有文本內容，不會受到 CSS 的影響，並且包含所有子元素的文本。
 
 ----------------------------------------------------------------------------
 前後端連接
@@ -49,6 +54,14 @@ step2:終端機指令taskkill /F /pid {該指令pid}
 
 2."account": "大衛3"
   "password": "123456789"
+
+3."account": "大衛4"
+  "password": "789456"
+
+4."account": "大胃斯坦"
+  "password": "111222333"
+
+
 
 
 

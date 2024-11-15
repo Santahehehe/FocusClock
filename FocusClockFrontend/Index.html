@@ -108,7 +108,7 @@
             background-color: #0066cc;
             border: none;
             cursor: pointer;
-            margin-bottom: 20px;
+            /* margin-bottom: 20px; */
             transition: font-size 0.3s ease, background-color 0.3s ease;
         }
 
@@ -133,11 +133,11 @@
 
         /* 展開按鈕 */
         #toggleMenuButton {
-            position: fixed;
+            /* position: fixed;
             top: 20px;
-            right: 20px;
+            right: 20px; */
             font-size: 24px;
-            background-color: transparent;
+            background-color: #555;
             color: white;
             border: none;
             cursor: pointer;
@@ -152,12 +152,56 @@
             cursor: pointer;
             margin-bottom: 20px;
         }
+
+        #logOutButton {
+            width: 100%;
+            padding: 10px;
+            font-size: 20px;
+            color: white;
+            background-color: #0066cc;
+            border: none;
+            cursor: pointer;
+            /* margin-bottom: 20px; */
+            transition: font-size 0.3s ease, background-color 0.3s ease;
+        }
+
+        /* 裝右側按鈕的容器 */
+        .button-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex; /* 讓子元素水平排列 */
+            gap: 10px; /* 設置子元素之間的間距 */
+        }
     </style>
 </head>
 <body>
+    
+    <!-- 用來裝右側按鈕 -->
+    <div class="button-container">
+        <!-- 用來 登入按鈕 -->
+        <button id="loginButton">Log in</button>
+        <!-- 用來 登出按鈕 -->
+        <button id="logOutButton" onclick="logout()">Log out</button>
+        <!-- 右側選單展開按鈕 -->
+        <button id="toggleMenuButton">&#9776;</button>
+    </div>
+    
+    <!-- 右側選單 -->
+    <div id="sideMenu">
+        <button id="closeMenuButton">&#10006;</button> <!-- 收起選單的按鈕 -->
+        <!-- <button id="loginButton">Log in</button> -->
+        <div class="menu-item">選單項目 1</div>
+        <div class="menu-item">選單項目 2</div>
+        <div class="menu-item">選單項目 3</div>
+    </div>
+    
+    
+
     <!-- 紀錄區域 -->
     <div id="record">
         <h3>紀錄:</h3>
+        <p>帳號: <span id="accountRecord">N/A</span></p>
         <p>開始時間: <span id="startRecord">N/A</span></p>
         <p>結束時間: <span id="endRecord">N/A</span></p>
         <p>總時長: <span id="durationRecord">00:00:00</span></p>
@@ -194,18 +238,6 @@
         <button id="saveRecord">保存紀錄</button>
     </div>
 
-    <!-- 右側選單展開按鈕 -->
-    <button id="toggleMenuButton">&#9776;</button>
-
-    <!-- 右側選單 -->
-    <div id="sideMenu">
-        <button id="closeMenuButton">&#10006;</button> <!-- 收起選單的按鈕 -->
-        <button id="loginButton">Log in</button>
-        <div class="menu-item">選單項目 1</div>
-        <div class="menu-item">選單項目 2</div>
-        <div class="menu-item">選單項目 3</div>
-    </div>
-
     <!-- JavaScript 程式碼 -->
     <script>
         // 選擇按鈕和其他元素
@@ -239,6 +271,25 @@
         let endTime;
         let timerInterval;
         let elapsedSeconds = 0;
+
+
+        //登出按鈕功能
+        function logout(){
+            localStorage.setItem("username",null);
+            document.getElementById("accountRecord").textContent = "請先登入";
+        }
+
+        //顯示當前使用者功能
+        loginUser();
+        function loginUser(){
+            //console.log(localStorage.getItem("username"));
+            if(localStorage.getItem("username") != "null"){
+                document.getElementById("accountRecord").textContent = localStorage.getItem("username"); 
+            }else{
+                document.getElementById("accountRecord").textContent = "尚未登入"; 
+            }
+        }
+
 
         // 顯示現在時間
         function updateCurrentTime() {
@@ -277,9 +328,14 @@
 
         // 開始按鈕
         button.addEventListener('click', () => {
-            if (!button.classList.contains('active')) {
+            //從localStorage的username抓名字是否已經登入
+            if(localStorage.getItem("username")!="null"){
+                //如果已經登入，正常執行
+                if (!button.classList.contains('active')) {
                 // 記錄開始時間並啟動計時
                 startTime = new Date();
+                //account名稱從localStorage抓
+                const username = localStorage.getItem("username");
                 //每次按下開始計時都要讓碼表從0開始
                 elapsedSeconds =0;
                 //用來將開始時間顯示在記錄板上(可以在這邊自訂紀錄板上開始時間的格式)
@@ -293,8 +349,8 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        //還沒做會員登入系統，先用'大胃斯坦'代替
-                        account: "大胃斯坦",
+                        //當前登入者名字
+                        account: username,
                         //因為要用來記錄，特別指定格式
                         startTime: startTime.toLocaleString(),
                     })
@@ -309,23 +365,33 @@
                 startTimer();
                 //在控制台顯示開始時間
                 //console.log(startTime);
-            } else {
-                // 記錄結束時間並停止計時
-                endTime = new Date();
-                //用來將結束時間顯示在記錄板上(可以在這邊自訂紀錄板上結束時間的格式)
-                endRecord.textContent = endTime.toLocaleTimeString();
-                stopTimer();
-                button.classList.remove('active');
-                button.innerHTML = '&#9658; 開始'; //把計時按鈕改成播放圖示
-                const duration = elapsedSeconds;
-                durationRecord.textContent = formatTime(duration);//把總時長格式化
-                popup.style.display = 'block'; // 顯示彈出填寫分數和備註視窗
+                } else {
+                    // 記錄結束時間並停止計時
+                    endTime = new Date();
+                    //用來將結束時間顯示在記錄板上(可以在這邊自訂紀錄板上結束時間的格式)
+                    endRecord.textContent = endTime.toLocaleTimeString();
+                    stopTimer();
+                    button.classList.remove('active');
+                    button.innerHTML = '&#9658; 開始'; //把計時按鈕改成播放圖示
+                    const duration = elapsedSeconds;
+                    durationRecord.textContent = formatTime(duration);//把總時長格式化
+                    popup.style.display = 'block'; // 顯示彈出填寫分數和備註視窗
+                }
             }
+            //如果還沒登入，跳轉到登入頁面
+            else{
+                window.location.href = 'login.html';
+            }
+
+            
         });
 
         //用來監聽按下修改分數和備註的按鈕
         revise.addEventListener('click', () => {
-            popup.style.display = 'block'; // 顯示彈出填寫分數和備註視窗
+            //確保已經結束計時
+            if(document.getElementById('endRecord').textContent != "N/A"){
+                popup.style.display = 'block'; // 顯示彈出填寫分數和備註視窗
+            }
         });
 
 
@@ -385,8 +451,14 @@
             noteRecord.textContent = note;
 
             // 準備資料並用put請求發送到後端 更新前面建立的data row
-            //還沒做會員登入系統，先用大胃斯坦代替
-            fetch('http://localhost:8080/save-time/大胃斯坦', {
+            //登入者資料
+            const userName = localStorage.getItem("username");
+            console.log(userName);
+            //把登入者資料用參數的方式加入到要請求的url地址
+            const apiUrl = `http://localhost:8080/save-time/${encodeURIComponent(userName)}`;
+            console.log(apiUrl);
+            //用account名稱和startTime去找對應的時間戳記並更改end, duration, focusScore, note
+            fetch(apiUrl, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
@@ -409,6 +481,7 @@
             popup.style.display = 'none'; // 隱藏彈出視窗
         });
 
+        /*
         //用來在直接關閉網頁時保存資料
         window.addEventListener('beforeunload', function (event) {
             // 這會顯示一個警告提示框，提醒用戶離開頁面
@@ -416,6 +489,7 @@
             event.returnValue = message;  // 標準方法
             return message;              // 舊版方法兼容性
         });
+        */
     </script>
 </body>
 </html>
