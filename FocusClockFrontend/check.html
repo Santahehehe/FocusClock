@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>資料頁面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        #right-panel {
+            width: 300px;
+            height: 100%;
+            position: fixed;
+            top: 0;
+            right: 0;
+            background-color: #f4f4f4;
+            display: none;
+            padding: 20px;
+            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);
+        }
+        #right-panel.open {
+            display: block;
+        }
+        #toggle-btn {
+            font-size: 30px;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            cursor: pointer;
+            z-index: 999;
+        }
+        .pagination {
+            text-align: center;
+        }
+        .pagination button {
+            margin: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+
+        /* 收起選單按鈕 */
+        #closeMenuButton {
+            font-size: 24px;
+            background-color: transparent;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        /* 右側選單選項 */
+        .menu-item {
+            margin: 10px 0;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        /* 鼠標停留在右側選單項目 */
+        .menu-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+    </style>
+</head>
+<body>
+    <!-- 右側選單展開按鈕 -->
+    <div id="toggle-btn" onclick="togglePanel()">&#9776;</div>
+
+    <!-- 右側選單 -->
+    <div id="right-panel">
+        <button id="closeMenuButton">&#10006;</button> <!-- 收起選單的按鈕 -->
+        <!-- <button id="loginButton">Log in</button> -->
+        <div class="menu-item" onclick="toIndexPage()">計時功能</div>
+        <div class="menu-item">選單項目 2</div>
+        <div class="menu-item">選單項目 3</div>
+    </div>
+
+    <!-- 搜索欄位 -->
+    <div style="margin-bottom: 20px;">
+        <input type="text" id="searchInput" placeholder="輸入搜尋內容" value ="11/12">
+        <button onclick="searchTable()">搜尋</button>
+    </div>
+
+    <!-- 新增分類 -->
+    <div style="margin-bottom: 20px;">
+        <input type="text" id="newCategoryInput" placeholder="輸入新分類">
+        <button onclick="addCategory()">新增分類</button>
+    </div>
+
+    <!-- 修改分類 -->
+    <div style="margin-bottom: 20px;">
+        <input type="text" id="oldCategoryInput" placeholder="輸入要修改的分類名稱">
+        <input type="text" id="newCategoryNameInput" placeholder="輸入新名稱">
+        <button onclick="editCategory()">修改分類</button>
+    </div>
+
+    <!-- 刪除分類 -->
+    <div style="margin-bottom: 20px;">
+        <input type="text" id="categoryToDeleteInput" placeholder="輸入要刪除的分類名稱">
+        <button onclick="deleteCategory()">刪除分類</button>
+    </div>
+
+    <!-- 表格 -->
+    <table id="dataTable">
+        <thead>
+            <tr>
+                <th>資料數</th>
+                <th>帳號名稱</th>
+                <th>開始時間</th>
+                <th>結束時間</th>
+                <th>時長</th>
+                <th>專注力分數</th>
+                <th>備註</th>
+                <th>分類</th>
+            </tr>
+        </thead>
+        <tbody>
+            <script>
+                //分類表
+                const categories = ["分類 1", "分類 2", "分類 3"];
+
+                let currentPage = 1;
+                const rowsPerPage = 100;
+                //用來存pageData
+                let pageData = [];
+
+                // 模擬後端回傳資料，包含總資料數量和當前頁面資料
+                function fetchData(page = 1) {
+                    //取得登入者資料
+                    const userName = localStorage.getItem("username");
+                    console.log(userName);
+                    //設一個timeBlockLists變數來存 data中的timeBlock列表
+                    let timeBlockLists;
+                    //用totalCount變數來了解回傳的list資料量
+                    let totalCount;
+                    //把總筆數/一個頁面可容納筆數來算出需要幾個頁面
+                    let totalPages;
+                    
+                    //把登入者資料用參數的方式加入到要請求的url地址
+                    const apiUrl = `http://localhost:8080/checkTimeBlock/${encodeURIComponent(userName)}`;
+                    console.log(apiUrl);
+                    //用account名稱和startTime去找對應的時間戳記並更改end, duration, focusScore, note
+                    fetch(apiUrl, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    //把回應解析為JSON
+                    .then(response => response.json())
+                    .then(data => {
+                        //把取得的data印在控制台
+                        console.log(data);
+                        //設一個timeBlockLists變數來存 data(回傳object)中的timeBlock列表
+                        timeBlockLists = data.timeBlockList;
+                        //用totalCount變數來了解回傳的list資料量
+                        totalCount = data.timeBlockList.length;
+                        console.log("回傳資料有"+totalCount+"筆");
+                        //把總筆數/一個頁面可容納筆數來算出需要幾個頁面
+                        totalPages = Math.ceil(totalCount / rowsPerPage);
+                        //把timeBlock列表分成一個個timeBlock push到pageData
+                        timeBlockLists.forEach(timeBlock =>{
+                            //console.log(`${timeBlock.account}`);
+                            //console.log(`${timeBlock.end}`);
+                            //console.log(`${timeBlock.tag}`);
+                            pageData.push({
+                                col1: `${timeBlock.account}`,
+                                col2: `${timeBlock.startTime}`,
+                                col3: `${timeBlock.end}`,
+                                col4: `${timeBlock.duration}`,
+                                col5: `${timeBlock.focusScore}`,
+                                col6: `${timeBlock.note}`,
+                                category: categories[5 % categories.length]
+                            });
+                        });
+
+                        console.log('pageData:'+pageData.length);
+                        //在table生成page資料
+                        renderTable(pageData);
+                        //生成資料分頁按鈕
+                        renderPagination(totalPages);
+                    })
+                    
+                }
+
+                //渲染table
+                function renderTable(pageData) {
+                    const tableBody = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
+                    tableBody.innerHTML = ''; // 清空表格內容
+                    let i =1;//用來顯示資料量
+                    //把pageData資料顯示在table(duration要格式化成00:00:00的形式)
+                    pageData.forEach(item => {
+                        const row = tableBody.insertRow();
+                        row.innerHTML = `
+                            <td>${i}</td>
+                            <td>${item.col1}</td>
+                            <td>${item.col2}</td>
+                            <td>${item.col3}</td>
+                            <td>${formatTime(item.col4)}</td>
+                            <td>${item.col5}</td>
+                            <td>${item.col6}</td>
+                            <td>
+                                <select class="category-select">
+                                    ${categories.map(cat => `<option value="${cat}" ${cat === item.category ? 'selected' : ''}>${cat}</option>`).join('')}
+                                </select>
+                            </td>
+                        `;
+                        i++;
+                    });
+                }
+
+                //用來動態生成分頁按鈕
+                function renderPagination(totalPages) {
+                    const paginationContainer = document.querySelector('.pagination');
+                    paginationContainer.innerHTML = ''; // 清空現有分頁按鈕
+
+                    for (let i = 1; i <= totalPages; i++) {
+                        //分頁按鈕
+                        const button = document.createElement('button');
+                        //幫button上面顯示文字
+                        button.textContent = i;
+                        button.onclick = function() {
+                            //如果有換頁
+                            if(currentPage !=i ){
+                                //取得正在第幾頁
+                                currentPage = i;
+                                //生成該頁的資料
+                                fetchData(i);
+                            }
+                        };
+                        paginationContainer.appendChild(button);
+                    }
+                }
+
+                // 點擊搜尋後觸發
+                function searchTable() {
+                    const searchInput = document.getElementById('searchInput').value.toLowerCase();
+                    const table = document.getElementById('dataTable');
+                    const rows = table.getElementsByTagName('tr');
+                    
+                    for (let i = 1; i < rows.length; i++) {
+                        const cells = rows[i].getElementsByTagName('td');
+                        let found = false;
+                        for (let j = 0; j < cells.length - 1; j++) { // 最後一欄是下拉選單
+                            if (cells[j].textContent.toLowerCase().includes(searchInput)) {
+                                found = true;
+                                break;
+                            }
+                        }
+                        rows[i].style.display = found ? '' : 'none';
+                    }
+                }
+
+                // 開始載入資料
+                window.onload = function() {
+                    fetchData(currentPage);
+                };
+
+                // 格式化時間(把second format成 00:00:00)
+                function formatTime(seconds) {
+                    const hrs = String(Math.floor(seconds / 3600)).padStart(2, '0');
+                    const mins = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
+                    const secs = String(seconds % 60).padStart(2, '0');
+                    return `${hrs}:${mins}:${secs}`;
+                }
+            </script>
+        </tbody>
+    </table>
+
+    <div class="pagination"></div>
+
+    <script>
+        //右側選單本體
+        const panel = document.getElementById('right-panel');
+        //右側選單收起按鈕
+        const closeMenuButton = document.getElementById('closeMenuButton');
+        //右側選單展開按鈕
+        const toggleBtn = document.getElementById('toggle-btn');
+
+        //點擊右側選單收起按鈕收起右側選單
+        closeMenuButton.addEventListener('click', () => {
+            panel.classList.remove('open');
+        });
+        
+        // 右側選單的展開按鈕
+        function togglePanel() {
+            panel.classList.toggle('open');
+        }
+
+        // 點擊非右側選單區域時，收起右側選單
+        document.addEventListener('click', function(event) {
+            if (!panel.contains(event.target) && event.target !== toggleBtn) {
+                panel.classList.remove('open');
+            }
+        });
+
+        //將頁面跳轉回計時功能
+        function toIndexPage(){
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

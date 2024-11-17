@@ -1,6 +1,7 @@
 package com.AT.FocusClockBackend;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -43,6 +44,13 @@ public class TimeBlockController {
 		return "hello from spring boot";
 	}
 	
-	
+	//接受get請求呼叫checkTimeBlock方法來查看帳號的時間戳記
+	@GetMapping("/checkTimeBlock/{account}")
+	public TimeBlock checkByAccount(@PathVariable String account) {
+		TimeBlock timeBlock = new TimeBlock();
+		timeBlock.setAccount(account);
+		//會回傳TimeBlock的timeBlockList變數(一串timeBlock所形成的list)
+		return timeBlockService.checkByAccount(timeBlock);
+	}
 	
 }

@@ -191,7 +191,7 @@
     <div id="sideMenu">
         <button id="closeMenuButton">&#10006;</button> <!-- 收起選單的按鈕 -->
         <!-- <button id="loginButton">Log in</button> -->
-        <div class="menu-item">選單項目 1</div>
+        <div class="menu-item" onclick="toCheckPage()">查看時間戳記</div>
         <div class="menu-item">選單項目 2</div>
         <div class="menu-item">選單項目 3</div>
     </div>
@@ -270,7 +270,7 @@
         let startTime;
         let endTime;
         let timerInterval;
-        let elapsedSeconds = 0;
+        let elapsedSeconds;
 
 
         //登出按鈕功能
@@ -332,39 +332,45 @@
             if(localStorage.getItem("username")!="null"){
                 //如果已經登入，正常執行
                 if (!button.classList.contains('active')) {
-                // 記錄開始時間並啟動計時
-                startTime = new Date();
-                //account名稱從localStorage抓
-                const username = localStorage.getItem("username");
-                //每次按下開始計時都要讓碼表從0開始
-                elapsedSeconds =0;
-                //用來將開始時間顯示在記錄板上(可以在這邊自訂紀錄板上開始時間的格式)
-                startRecord.textContent = startTime.toLocaleTimeString();
-                button.classList.add('active');//把toggleButton變成toggleButton.active以啟動CSS改變計時按鈕樣式
-                button.innerHTML = '&#9632; 停止'; //把計時按鈕改成停止圖示
-                // 用Post請求發送到後端以在focustime資料庫的time table建立新的data row(時間戳記)
-                fetch('http://localhost:8080/save-time', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        //當前登入者名字
-                        account: username,
-                        //因為要用來記錄，特別指定格式
-                        startTime: startTime.toLocaleString(),
+                
+                    // 記錄開始時間並啟動計時
+                    startTime = new Date();
+                    // 把開始時間記錄到localStorage
+                    localStorage.setItem("startTime",startTime);
+                    console.log("localStorage保存開始時間:"+localStorage.getItem("startTime"));
+
+                    //account名稱從localStorage抓
+                    const username = localStorage.getItem("username");
+                
+                    //每次按下開始計時都要讓碼表從0開始
+                    elapsedSeconds =0;
+                    //用來將開始時間顯示在記錄板上(可以在這邊自訂紀錄板上開始時間的格式)
+                    startRecord.textContent = startTime.toLocaleTimeString();
+                    button.classList.add('active');//把toggleButton變成toggleButton.active以啟動CSS改變計時按鈕樣式
+                    button.innerHTML = '&#9632; 停止'; //把計時按鈕改成停止圖示
+                    // 用Post請求發送到後端以在focustime資料庫的time table建立新的data row(時間戳記)
+                    fetch('http://localhost:8080/save-time', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            //當前登入者名字
+                            account: username,
+                            //因為要用來記錄，特別指定格式
+                            startTime: startTime.toLocaleString(),
+                        })
                     })
-                })
-                .then(reponse=> {
-                    console.log('資料已儲存:',reponse);
-                })
-                .catch(error => {
-                    console.error('儲存資料時出錯:', error);
-                });
-                //開始計時
-                startTimer();
-                //在控制台顯示開始時間
-                //console.log(startTime);
+                    .then(reponse=> {
+                        console.log('資料已儲存:',reponse);
+                    })
+                    .catch(error => {
+                        console.error('儲存資料時出錯:', error);
+                    });
+                    //開始計時
+                    startTimer(elapsedSeconds);
+                    //在控制台顯示開始時間
+                    //console.log(startTime);
                 } else {
                     // 記錄結束時間並停止計時
                     endTime = new Date();
@@ -373,9 +379,10 @@
                     stopTimer();
                     button.classList.remove('active');
                     button.innerHTML = '&#9658; 開始'; //把計時按鈕改成播放圖示
-                    const duration = elapsedSeconds;
-                    durationRecord.textContent = formatTime(duration);//把總時長格式化
+                    // const duration = elapsedSeconds;
+                    // durationRecord.textContent = formatTime(duration);//把總時長格式化
                     popup.style.display = 'block'; // 顯示彈出填寫分數和備註視窗
+                    localStorage.setItem("startTime",null);
                 }
             }
             //如果還沒登入，跳轉到登入頁面
@@ -401,9 +408,10 @@
         });
 
         // 開始計時
-        function startTimer() {
+        function startTimer(elapsedSeconds) {
             timerInterval = setInterval(() => {
                 elapsedSeconds++;
+                //把秒數顯示正規化後顯示到紀錄版
                 displayTime(elapsedSeconds);
             }, 1000);
             //index紀錄區域的結束時間 歸0
@@ -426,7 +434,7 @@
             durationRecord.textContent = formatTime(seconds);
         }
 
-        // 格式化時間
+        // 把second format成 00:00:00
         function formatTime(seconds) {
             const hrs = String(Math.floor(seconds / 3600)).padStart(2, '0');
             const mins = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
@@ -457,7 +465,11 @@
             //把登入者資料用參數的方式加入到要請求的url地址
             const apiUrl = `http://localhost:8080/save-time/${encodeURIComponent(userName)}`;
             console.log(apiUrl);
+            
             //用account名稱和startTime去找對應的時間戳記並更改end, duration, focusScore, note
+            //要保存的時長用duration變數
+            //duration就是結束時間-開始時間，但JS時間相減結果的單位是毫秒，所以要/1000變成秒
+            const duration = (endTime-startTime)/1000;
             fetch(apiUrl, {
                 method: 'PUT',
                 headers: {
@@ -466,7 +478,7 @@
                 body: JSON.stringify({
                     startTime: startTime.toLocaleString(),
                     end: endTime.toLocaleString(),
-                    duration: elapsedSeconds,
+                    duration: duration,
                     focusScore: focusScore,
                     note: note
                 })
@@ -481,6 +493,17 @@
             popup.style.display = 'none'; // 隱藏彈出視窗
         });
 
+        function toCheckPage(){
+            //檢查是否登入
+            if(localStorage.getItem("username")!="null"){
+                //以登入: 前往查看頁面
+                window.location.href = 'check.html';
+            }
+            else{
+                //未登入:前往登入頁面
+                window.location.href = 'login.html';
+            }
+        }
         /*
         //用來在直接關閉網頁時保存資料
         window.addEventListener('beforeunload', function (event) {
@@ -490,6 +513,29 @@
             return message;              // 舊版方法兼容性
         });
         */
+        
+        // 進入網頁載入初始資料
+        window.onload = function() {
+            //如果有開始計時，重新載入時要載入剛剛的開始時間(localStorage存的是字串，要把字串轉回Date())
+            startTime = new Date(localStorage.getItem("startTime"));
+            console.log("當前startTime"+localStorage.getItem("startTime"));
+            //測試是否已經開始計時(用isNaN測試startTime是否為有效日期)
+            if(!isNaN(startTime)){
+                //如果有開始計時，重新載入時用現在時間減去開始時間計算秒數
+                const nowTime = new Date();
+                console.log("當前時間:"+nowTime);
+                //index紀錄區域的總時長 用當前時間-開始時間的秒數代替
+                //(因為javascript中時間相減之結果單位是毫秒，要/1000才可以變成秒單位)
+                //讓碼表從剛剛的秒數繼續計時
+                elapsedSeconds = (nowTime-startTime)/1000;
+                startTimer(Math.floor(elapsedSeconds));
+                //將保存的開始時間顯示在記錄板上(可以在這邊自訂紀錄板上開始時間的格式)
+                startRecord.textContent = startTime.toLocaleTimeString();
+                //把按鈕狀態設定為已經啟動
+                button.classList.add('active');//把toggleButton變成toggleButton.active以啟動CSS改變計時按鈕樣式
+                button.innerHTML = '&#9632; 停止'; //把計時按鈕改成停止圖示
+            }
+        };
     </script>
 </body>
 </html>

@@ -5,6 +5,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Component;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
 
 @Component
 public class TimeBlockDao {
@@ -60,5 +61,18 @@ public class TimeBlockDao {
 		namedParameterJdbcTemplate.update(sql, map);
 				
 		return "已修改timeBlock";
+	}
+	
+	//用來取得所有該帳號的時間戳記，回傳的類別為一個TimeBlock的list
+	public List<TimeBlock> checkByAccount(TimeBlock timeBlock){
+		//sql語法，動態決定timeBlockAccount & timeBlockStart變數
+		String sql = "SELECT account,start,end,duration,score,note,tag FROM time_block WHERE account= :account";
+				
+		Map<String, Object> map = new HashMap<>();
+		map.put("account", timeBlock.getAccount());
+				
+		List<TimeBlock> list = namedParameterJdbcTemplate.query(sql, map, new TimeBlockRowMapper());
+		
+		return list;
 	}
 }

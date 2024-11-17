@@ -1,5 +1,7 @@
 package com.AT.FocusClockBackend;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -17,4 +19,15 @@ public class TimeBlockService {
 	public String revise_TimeBlock(TimeBlock timeBlock) {
 		return timeBlockDao.revise_TimeBlock(timeBlock);
 	}
+	
+	//用來查看帳號的時間戳記
+	public TimeBlock checkByAccount(TimeBlock timeBlock) {
+		List<TimeBlock> timeBlocks = timeBlockDao.checkByAccount(timeBlock);
+		
+		TimeBlock result = new TimeBlock();
+		result.setTimeBlockList(timeBlocks);
+		
+		return result;
+	}
+	
 }

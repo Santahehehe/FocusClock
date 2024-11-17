@@ -1,5 +1,7 @@
 package com.AT.FocusClockBackend;
 
+import java.util.List;
+
 public class TimeBlock {
 	//用來記錄帳戶名稱
 	private String account;
@@ -15,6 +17,8 @@ public class TimeBlock {
 	private String note;
 	//timeBlock分類標籤
 	private String tag;
+	//用來回傳多筆時間戳記
+	private List<TimeBlock> timeBlockList;
 
 	//設定和取得account變數function
 	public void setAccount(String account) {
@@ -72,6 +76,11 @@ public class TimeBlock {
 		return tag;
 	}
 	
-	
-	
+	//設定和取得timeBlockList的function
+	public void setTimeBlockList(List<TimeBlock> timeBlockList) {
+		this.timeBlockList = timeBlockList;
+	}
+	public List<TimeBlock> getTimeBlockList(){
+		return timeBlockList;
+	}
 }
