@@ -178,14 +178,14 @@
 
     <!-- 修改分類 -->
     <div style="margin-bottom: 20px;">
-        <input type="text" id="oldCategoryInput" placeholder="輸入要修改的分類名稱">
+        <div id="oldCategoryInput"></div>
         <input type="text" id="newCategoryNameInput" placeholder="輸入新名稱">
         <button onclick="editCategory()">修改分類</button>
     </div>
 
     <!-- 刪除分類 -->
     <div style="margin-bottom: 20px;">
-        <input type="text" id="categoryToDeleteInput" placeholder="輸入要刪除的分類名稱">
+        <div id="categoryToDeleteInput"></div>
         <button onclick="deleteCategory()">刪除分類</button>
     </div>
 
@@ -205,16 +205,36 @@
         </thead>
         <tbody>
             <script>
-
                 let currentPage = 1;
                 const rowsPerPage = 100;
                 //用來存pageData
                 let pageData = [];
                 let categories = ["分類 1", "分類 2", "分類 3"];
+
+
+                //讓修改分類的oldCategoryInput變成下拉式選單
+                const oldCategoryInput = document.getElementById("oldCategoryInput");
+                const oldCategoryInputHTML = `
+                    <select class="category-select" id='dynamic-oldCategory'>
+                        <!-- 根據 categories 動態生成選項 -->
+                        ${categories.map(cat => `<option value="${cat}">${cat}</option>`).join('')}
+                    </select>
+                `
+                oldCategoryInput.innerHTML = oldCategoryInputHTML;
+                //讓刪除分類的輸入也變成下拉式選單
+                const categoryToDeleteInput = document.getElementById("categoryToDeleteInput");
+                const categoryToDeleteInputHTML = `
+                    <select class="category-select" id='dynamic-DeleteCategory'>
+                        <!-- 根據 categories 動態生成選項 -->
+                        ${categories.map(cat => `<option value="${cat}">${cat}</option>`).join('')}
+                    </select>
+                `
+                categoryToDeleteInput.innerHTML = categoryToDeleteInputHTML;
+                
                 
                 //取得該帳號所有的Tag種類
-                function fetchTag(){
-
+                function fetchCategories(){
+                    
                 }
 
                 // 新增分類功能
@@ -233,7 +253,8 @@
 
                 // 修改分類功能 
                 function editCategory() {
-                    const oldCategory = document.getElementById('oldCategoryInput').value.trim();
+                    const oldCategory = document.getElementById('dynamic-oldCategory').value;
+                    console.log(oldCategory);
                     const newCategory = document.getElementById('newCategoryNameInput').value.trim();
 
                     if (!oldCategory || !newCategory) {
@@ -256,28 +277,48 @@
                     
                     // 更新下拉選單
                     categories = categories.map(cat => cat === oldCategory ? newCategory : cat);
-                    
+                    // 重新生成修改分類選單
+                    const oldCategoryInput = document.getElementById("oldCategoryInput");
+                    const selectHTML = `
+                    <select class="category-select" id='dynamic-oldCategory'>
+                        <!-- 根據 categories 動態生成選項 -->
+                        ${categories.map(cat => `<option value="${cat}">${cat}</option>`).join('')}
+                    </select>
+                    `
+                    oldCategoryInput.innerHTML = selectHTML;
+                    //重新生成刪除選單
+                    const categoryToDeleteInput = document.getElementById("categoryToDeleteInput");
+                    const categoryToDeleteInputHTML = `
+                        <select class="category-select" id='dynamic-DeleteCategory'>
+                            <!-- 根據 categories 動態生成選項 -->
+                            ${categories.map(cat => `<option value="${cat}">${cat}</option>`).join('')}
+                        </select>
+                    `
+                    categoryToDeleteInput.innerHTML = categoryToDeleteInputHTML;
+                    //把更新的資料渲染Table
                     renderTable(pageData);
                     console.log(`分類 ${oldCategory} 已更新為 ${newCategory}`);
                     //清空修改名稱欄位
-                    document.getElementById('oldCategoryInput').value = "";
                     document.getElementById('newCategoryNameInput').value = "";
                 }
 
                 // 刪除分類功能(如果原本的分類被刪掉就會變成未分類)
                 function deleteCategory() {
-                    const categoryToDelete = document.getElementById('categoryToDeleteInput').value.trim();
+                    //把選擇
+                    const categoryToDelete = document.getElementById('dynamic-DeleteCategory').value;
+                    console.log(categoryToDelete);
+                    // const categoryToDelete = document.getElementById('categoryToDeleteInput').value.trim();
                     
-                    //console.log(categories);
-                    if (!categoryToDelete) {
-                        alert("請輸入要刪除的分類名稱！");
-                        return;
-                    }
+                    // //console.log(categories);
+                    // if (!categoryToDelete) {
+                    //     alert("請輸入要刪除的分類名稱！");
+                    //     return;
+                    // }
 
-                    if (!categories.includes(categoryToDelete)) {
-                        alert("找不到該分類！");
-                        return;
-                    }
+                    // if (!categories.includes(categoryToDelete)) {
+                    //     alert("找不到該分類！");
+                    //     return;
+                    // }
 
                     // 刪除分類並清空資料中的選擇
                     categories = categories.filter(cat => cat !== categoryToDelete);
@@ -286,10 +327,29 @@
                             item.category = ''; // 清空該資料的分類
                         }
                     });
-                    //console.log(pageData);
+                    console.log(pageData);
+                    //用更新的資料重新渲染Table(因為可能刪除到資料有的分類)
                     renderTable(pageData);
                     console.log(`分類 ${categoryToDelete} 已刪除`);
-                    document.getElementById('categoryToDeleteInput').value ="";
+                    // 重新生成修改分類選單
+                    const oldCategoryInput = document.getElementById("oldCategoryInput");
+                    const selectHTML = `
+                    <select class="category-select" id='dynamic-oldCategory'>
+                        <!-- 根據 categories 動態生成選項 -->
+                        ${categories.map(cat => `<option value="${cat}">${cat}</option>`).join('')}
+                    </select>
+                    `
+                    oldCategoryInput.innerHTML = selectHTML;
+                    //重新生成刪除選單
+                    const categoryToDeleteInput = document.getElementById("categoryToDeleteInput");
+                    const categoryToDeleteInputHTML = `
+                        <select class="category-select" id='dynamic-DeleteCategory'>
+                            <!-- 根據 categories 動態生成選項 -->
+                            ${categories.map(cat => `<option value="${cat}">${cat}</option>`).join('')}
+                        </select>
+                    `
+                    categoryToDeleteInput.innerHTML = categoryToDeleteInputHTML;
+                    //document.getElementById('categoryToDeleteInput').value ="";
                 }
 
                 // 獲取要顯示在頁面的資料(後端回傳資料，包含總資料數量和當前頁面資料)
