@@ -13,7 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class TimeBlockController {
 	
-	//把TimeBlockService加入Bean然後指派給這個timeBlockService
+	//要在TimeBlockService.java把TimeBlockService加入Bean
+	//然後用@Autowired指派給這個timeBlockService
 	@Autowired
 		//如果都要處理timeBlock就會共用這個物件
 	private TimeBlockService timeBlockService;

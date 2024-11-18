@@ -239,6 +239,7 @@
 
                 // 新增分類功能
                 function addCategory() {
+                    //trim():用來消去字串兩側的空格(但不影響字串內部的空格)
                     const newCategory = document.getElementById('newCategoryInput').value.trim();
                     //如果newCategory值不為空
                     if(newCategory){
@@ -246,6 +247,31 @@
                         if (!categories.includes(newCategory)) {
                             //把新分類添加到categories
                             categories.push(newCategory);
+                            //從localStorage抓現在登入的帳號
+                            const username = localStorage.getItem('username');
+                            
+                            //用post請求呼叫新增tag的api
+                            fetch('http://localhost:8080/add-tag', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    //當前登入者名字
+                                    account: username,
+                                    //要新增的tag是newCategory
+                                    tag_name: newCategory,
+                                })
+                            })
+                            .then(reponse=> {
+                                console.log('Tag已新增:',reponse);
+                            })
+                            .catch(error => {
+                                console.error('新增Tag時出錯:', error);
+                            });
+                            
+                            
+                            
                             console.log(`新增分類：${newCategory}`);
                             //清空輸入新分類欄位
                             document.getElementById('newCategoryInput').value = '';
