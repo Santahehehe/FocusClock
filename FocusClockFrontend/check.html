@@ -240,15 +240,44 @@
                 // 新增分類功能
                 function addCategory() {
                     const newCategory = document.getElementById('newCategoryInput').value.trim();
-                    if (newCategory) {
-                        //把新分類添加到categories
-                        categories.push(newCategory);
-                        cosole.log(`新增分類：${newCategory}`);
-                        //清空輸入新分類欄位
-                        document.getElementById('newCategoryInput').value = '';
-                    } else {
-                        alert("請輸入分類名稱！");
+                    //如果newCategory值不為空
+                    if(newCategory){
+                        //如果categories中沒有此分類的話
+                        if (!categories.includes(newCategory)) {
+                            //把新分類添加到categories
+                            categories.push(newCategory);
+                            console.log(`新增分類：${newCategory}`);
+                            //清空輸入新分類欄位
+                            document.getElementById('newCategoryInput').value = '';
+                            
+                            // 重新生成修改分類選單
+                            const oldCategoryInput = document.getElementById("oldCategoryInput");
+                            const selectHTML = `
+                                <select class="category-select" id='dynamic-oldCategory'>
+                                    <!-- 根據 categories 動態生成選項 -->
+                                    ${categories.map(cat => `<option value="${cat}">${cat}</option>`).join('')}
+                                </select>
+                            `
+                            oldCategoryInput.innerHTML = selectHTML;
+                            //重新生成刪除選單
+                            const categoryToDeleteInput = document.getElementById("categoryToDeleteInput");
+                            const categoryToDeleteInputHTML = `
+                                <select class="category-select" id='dynamic-DeleteCategory'>
+                                    <!-- 根據 categories 動態生成選項 -->
+                                    ${categories.map(cat => `<option value="${cat}">${cat}</option>`).join('')}
+                                </select>
+                            `
+                            categoryToDeleteInput.innerHTML = categoryToDeleteInputHTML;
+                            //把更新的資料渲染Table
+                            renderTable(pageData);
+                            console.log(`分類 ${newCategory} 已新增`);
+                        } else{
+                            alert("已存在此分類");
+                        }
+                    }else{
+                        alert("請輸入分類名稱");
                     }
+                    
                 }
 
                 // 修改分類功能 
@@ -295,6 +324,7 @@
                         </select>
                     `
                     categoryToDeleteInput.innerHTML = categoryToDeleteInputHTML;
+
                     //把更新的資料渲染Table
                     renderTable(pageData);
                     console.log(`分類 ${oldCategory} 已更新為 ${newCategory}`);
