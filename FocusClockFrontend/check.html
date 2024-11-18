@@ -20,6 +20,7 @@
             padding: 10px;
             text-align: left;
         }
+
         #right-panel {
             width: 300px;
             height: 100%;
@@ -34,6 +35,7 @@
         #right-panel.open {
             display: block;
         }
+        /* 展開按鈕 */
         #toggle-btn {
             font-size: 30px;
             position: fixed;
@@ -41,6 +43,8 @@
             right: 20px;
             cursor: pointer;
             z-index: 999;
+            background-color: #555;
+            color: white;
         }
         .pagination {
             text-align: center;
@@ -75,11 +79,81 @@
             background-color: rgba(255, 255, 255, 0.1);
         }
 
+
+        /* 裝右側按鈕的容器 */
+        .right-container {
+            position: fixed;
+            top: 20px;
+            right: 100px;
+            display: flex; /* 讓子元素水平排列 */
+            gap: 30px; /* 設置子元素之間的間距 */
+        }
+
+        /* 管理整個彈出視窗(顯示圓餅圖) */
+        #myModal {
+            display: none; /* 隱藏視窗 */
+            position: fixed;
+            top: 10%;
+            left: 50%;
+            width: 50%;
+            height: 50%;
+            background-color: rgba(0, 0, 0, 0.5); /* 半透明背景 */
+            justify-content: center;
+            align-items: center;
+        }
+        /* 管理 關閉圓餅圖視窗按鈕 和 圓餅圖 的區域*/
+        .modal-content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        /* 關閉圓餅圖視窗按鈕 */
+        #closeBtn {
+            cursor: pointer;
+            color: #fff;
+            font-size: 120px;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #fff;
+        }
+        /* 顯示今日圓餅圖 按鈕 */
+        #openModalBtn {
+            width: 100%;
+            padding: 10px;
+            font-size: 20px;
+            color: white;
+            background-color: #0066cc;
+            border: none;
+            cursor: pointer;
+            /* margin-bottom: 20px; */
+            transition: font-size 0.3s ease, background-color 0.3s ease;
+        }
+        /* 鼠標停留在顯示今日圓餅圖按鈕 */
+        #openModalBtn:hover {
+            font-size: 22px;
+            background-color: #555;
+        }
+
     </style>
 </head>
 <body>
-    <!-- 右側選單展開按鈕 -->
-    <div id="toggle-btn" onclick="togglePanel()">&#9776;</div>
+    <!-- 用來裝右側按鈕的容器 -->
+    <div class="right-container">
+        <!-- 顯示今日圓餅圖 按鈕 -->
+        <button id="openModalBtn">今日圓餅圖</button>
+        <!-- 右側選單展開按鈕 -->
+        <button id="toggle-btn" onclick="togglePanel()">&#9776;</button>
+    </div>
+
+    <!-- 彈出視窗(顯示圓餅圖) -->
+    <div id="myModal">
+        <div class="modal-content">
+            <span id="closeBtn">&times;</span>
+            <canvas id="myPieChart" width="400" height="400"></canvas>
+        </div>
+    </div>
 
     <!-- 右側選單 -->
     <div id="right-panel">
@@ -92,8 +166,8 @@
 
     <!-- 搜索欄位 -->
     <div style="margin-bottom: 20px;">
-        <input type="text" id="searchInput" placeholder="輸入搜尋內容" value ="11/12">
-        <button onclick="searchTable()">搜尋</button>
+        <input type="text" id="searchInput" placeholder="輸入搜尋內容">
+        <button onclick="searchTable()" id="searchBtn">搜尋</button>
     </div>
 
     <!-- 新增分類 -->
@@ -131,15 +205,94 @@
         </thead>
         <tbody>
             <script>
-                //分類表
-                const categories = ["分類 1", "分類 2", "分類 3"];
 
                 let currentPage = 1;
                 const rowsPerPage = 100;
                 //用來存pageData
                 let pageData = [];
+                let categories = ["分類 1", "分類 2", "分類 3"];
+                
+                //取得該帳號所有的Tag種類
+                function fetchTag(){
 
-                // 模擬後端回傳資料，包含總資料數量和當前頁面資料
+                }
+
+                // 新增分類功能
+                function addCategory() {
+                    const newCategory = document.getElementById('newCategoryInput').value.trim();
+                    if (newCategory) {
+                        //把新分類添加到categories
+                        categories.push(newCategory);
+                        cosole.log(`新增分類：${newCategory}`);
+                        //清空輸入新分類欄位
+                        document.getElementById('newCategoryInput').value = '';
+                    } else {
+                        alert("請輸入分類名稱！");
+                    }
+                }
+
+                // 修改分類功能 
+                function editCategory() {
+                    const oldCategory = document.getElementById('oldCategoryInput').value.trim();
+                    const newCategory = document.getElementById('newCategoryNameInput').value.trim();
+
+                    if (!oldCategory || !newCategory) {
+                        alert("請填寫要修改的分類名稱和新名稱！");
+                        return;
+                    }
+
+                    if (!categories.includes(oldCategory)) {
+                        alert("找不到該分類！");
+                        return;
+                    }
+
+                    // 更新所有選擇該分類的資料
+                    pageData.forEach(item => {
+                        if (item.category === oldCategory) {
+                            //console.log(item.category);
+                            item.category = newCategory;
+                        }
+                    });
+                    
+                    // 更新下拉選單
+                    categories = categories.map(cat => cat === oldCategory ? newCategory : cat);
+                    
+                    renderTable(pageData);
+                    console.log(`分類 ${oldCategory} 已更新為 ${newCategory}`);
+                    //清空修改名稱欄位
+                    document.getElementById('oldCategoryInput').value = "";
+                    document.getElementById('newCategoryNameInput').value = "";
+                }
+
+                // 刪除分類功能(如果原本的分類被刪掉就會變成未分類)
+                function deleteCategory() {
+                    const categoryToDelete = document.getElementById('categoryToDeleteInput').value.trim();
+                    
+                    //console.log(categories);
+                    if (!categoryToDelete) {
+                        alert("請輸入要刪除的分類名稱！");
+                        return;
+                    }
+
+                    if (!categories.includes(categoryToDelete)) {
+                        alert("找不到該分類！");
+                        return;
+                    }
+
+                    // 刪除分類並清空資料中的選擇
+                    categories = categories.filter(cat => cat !== categoryToDelete);
+                    pageData.forEach(item => {
+                        if (item.category === categoryToDelete) {
+                            item.category = ''; // 清空該資料的分類
+                        }
+                    });
+                    //console.log(pageData);
+                    renderTable(pageData);
+                    console.log(`分類 ${categoryToDelete} 已刪除`);
+                    document.getElementById('categoryToDeleteInput').value ="";
+                }
+
+                // 獲取要顯示在頁面的資料(後端回傳資料，包含總資料數量和當前頁面資料)
                 function fetchData(page = 1) {
                     //取得登入者資料
                     const userName = localStorage.getItem("username");
@@ -171,9 +324,11 @@
                         //用totalCount變數來了解回傳的list資料量
                         totalCount = data.timeBlockList.length;
                         console.log("回傳資料有"+totalCount+"筆");
-                        //把總筆數/一個頁面可容納筆數來算出需要幾個頁面
-                        totalPages = Math.ceil(totalCount / rowsPerPage);
-                        //把timeBlock列表分成一個個timeBlock push到pageData
+                        
+                        // //把總筆數/一個頁面可容納筆數來算出需要幾個頁面
+                        // totalPages = Math.ceil(totalCount / rowsPerPage);
+                        
+                        //準備要顯示的資料:把timeBlock列表分成一個個timeBlock push到pageData
                         timeBlockLists.forEach(timeBlock =>{
                             //console.log(`${timeBlock.account}`);
                             //console.log(`${timeBlock.end}`);
@@ -189,17 +344,19 @@
                             });
                         });
 
-                        console.log('pageData:'+pageData.length);
+                        console.log('pageData筆數:'+pageData.length);
                         //在table生成page資料
                         renderTable(pageData);
-                        //生成資料分頁按鈕
-                        renderPagination(totalPages);
+                        
+                        // //生成資料分頁按鈕
+                        // renderPagination(totalPages);
                     })
                     
                 }
 
                 //渲染table
                 function renderTable(pageData) {
+                    console.log("跑renderTable()");
                     const tableBody = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
                     tableBody.innerHTML = ''; // 清空表格內容
                     let i =1;//用來顯示資料量
@@ -216,6 +373,8 @@
                             <td>${item.col6}</td>
                             <td>
                                 <select class="category-select">
+                                    <!--添加默認選項 "未分類"-->
+                                    <option value="" ${item.category && !categories.includes(item.category) ? 'selected' : ''}>未分類</option>
                                     ${categories.map(cat => `<option value="${cat}" ${cat === item.category ? 'selected' : ''}>${cat}</option>`).join('')}
                                 </select>
                             </td>
@@ -224,28 +383,28 @@
                     });
                 }
 
-                //用來動態生成分頁按鈕
-                function renderPagination(totalPages) {
-                    const paginationContainer = document.querySelector('.pagination');
-                    paginationContainer.innerHTML = ''; // 清空現有分頁按鈕
+                // //用來動態生成分頁按鈕
+                // function renderPagination(totalPages) {
+                //     const paginationContainer = document.querySelector('.pagination');
+                //     paginationContainer.innerHTML = ''; // 清空現有分頁按鈕
 
-                    for (let i = 1; i <= totalPages; i++) {
-                        //分頁按鈕
-                        const button = document.createElement('button');
-                        //幫button上面顯示文字
-                        button.textContent = i;
-                        button.onclick = function() {
-                            //如果有換頁
-                            if(currentPage !=i ){
-                                //取得正在第幾頁
-                                currentPage = i;
-                                //生成該頁的資料
-                                fetchData(i);
-                            }
-                        };
-                        paginationContainer.appendChild(button);
-                    }
-                }
+                //     for (let i = 1; i <= totalPages; i++) {
+                //         //分頁按鈕
+                //         const button = document.createElement('button');
+                //         //幫button上面顯示文字
+                //         button.textContent = i;
+                //         button.onclick = function() {
+                //             //如果有換頁
+                //             if(currentPage !=i ){
+                //                 //取得正在第幾頁
+                //                 currentPage = i;
+                //                 //生成該頁的資料
+                //                 fetchData(i);
+                //             }
+                //         };
+                //         paginationContainer.appendChild(button);
+                //     }
+                // }
 
                 // 點擊搜尋後觸發
                 function searchTable() {
@@ -264,11 +423,36 @@
                         }
                         rows[i].style.display = found ? '' : 'none';
                     }
+                    //把搜尋欄位清空
+                    //document.getElementById('searchInput').value = "";
                 }
+                
+                //在搜尋欄位輸入完直接 按下enter也會觸發搜尋
+                const searchField = document.getElementById('searchInput');
+                searchField.addEventListener('keydown', function(event){
+                    //檢查是否按下enter鍵
+                    if(event.key ==='Enter'){
+                        searchTable();
+                    }
+                })
+                
 
                 // 開始載入資料
                 window.onload = function() {
+                    //列出所有資料
                     fetchData(currentPage);
+                    //搜尋欄位的值預設為今天日期
+                        //取得現在日期時間
+                    const today = new Date();
+                        //僅保留年月日部分
+                    console.log("今天日期"+today.toLocaleString());
+                    const datePart = (today.toLocaleString()).split(' ')[0];
+                        //把search欄位值設定為日期部分
+                    document.getElementById('searchInput').value = datePart;
+                    //console.log(document.getElementById('searchInput').value);
+
+                    //取得所有分類標籤並放入分類表變數
+                    fetchTag();
                 };
 
                 // 格式化時間(把second format成 00:00:00)
@@ -284,7 +468,11 @@
 
     <div class="pagination"></div>
 
+    <!-- 導入圓餅圖功能 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <script>
+        
         //右側選單本體
         const panel = document.getElementById('right-panel');
         //右側選單收起按鈕
@@ -313,6 +501,67 @@
         function toIndexPage(){
             window.location.href = 'index.html';
         }
+
+// -----------------------------------------------
+        // 顯示圓餅圖功能
+        // 獲取按鈕和視窗
+        const openModalBtn = document.getElementById('openModalBtn');
+        const modal = document.getElementById('myModal');
+        const closeBtn = document.getElementById('closeBtn');
+        const ctx = document.getElementById('myPieChart').getContext('2d');
+
+        // 當按下顯示圓餅圖的按鈕時
+        openModalBtn.addEventListener('click', function() {
+            modal.style.display = 'flex'; // 顯示視窗
+            createPieChart(); // 創建圓餅圖
+        });
+
+        // 當按下關閉按鈕時，隱藏視窗
+        closeBtn.addEventListener('click', function() {
+            modal.style.display = 'none'; // 隱藏視窗
+        });
+        
+        // 點擊非 圓餅圖視窗區域時，隱藏圓餅圖視窗
+        document.addEventListener('click', function(event) {
+            if (!modal.contains(event.target) && event.target !== openModalBtn) {
+                modal.style.display = 'none';
+            }
+        });
+
+
+        // 創建圓餅圖
+        function createPieChart() {
+            const data = {
+                labels: ['蘋果', '香蕉', '櫻桃', '葡萄'],
+                datasets: [{
+                    data: [70, 20, 25, 25],
+                    backgroundColor: ['#FF5733', '#FFBD33', '#75FF33', '#33FF57'],
+                    borderColor: ['#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF'],
+                    borderWidth: 1
+                }]
+            };
+
+            const options = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        enabled: true
+                    }
+                }
+            };
+
+            new Chart(ctx, {
+                type: 'pie',
+                data: data,
+                options: options
+            });
+        }
+
+
     </script>
 </body>
 </html>
