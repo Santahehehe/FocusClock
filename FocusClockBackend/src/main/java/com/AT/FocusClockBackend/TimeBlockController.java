@@ -40,6 +40,19 @@ public class TimeBlockController {
 		return timeBlockService.revise_TimeBlock(timeBlock);
 	}
 	
+	//接受Put請求做選擇tag的動作
+		@PutMapping("/choose-tag/{account}")
+		public String chooseTag(@PathVariable String account,
+								@RequestBody TimeBlock timeBlock) {
+			//RequestBody中已經包含
+			//1.startTime(用來找對應的TimeBlock) 2.endTime 
+			//3.duration 4.focusScore 5.note
+			//再把前端放在url路徑的account放入timeBlock中
+			timeBlock.setAccount(account);
+			//接著就交給timeBlockService處理
+			return timeBlockService.chooseTag(timeBlock);
+		}
+	
 	@RequestMapping("/")
 	public String hello() {
 		return "hello from spring boot";

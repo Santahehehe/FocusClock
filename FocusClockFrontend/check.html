@@ -515,7 +515,7 @@
                                 col4: `${timeBlock.duration}`,
                                 col5: `${timeBlock.focusScore}`,
                                 col6: `${timeBlock.note}`,
-                                category: ''
+                                category: `${timeBlock.tag}`
                             });
                         });
 
@@ -697,6 +697,60 @@
             window.location.href = 'index.html';
         }
 
+        //在查看頁面選擇下拉式選單會把選擇回傳到後端
+        document.getElementById('dataTable').addEventListener('change', function (event) {
+            // 確保觸發事件的是下拉式選單
+            if (event.target.tagName === 'SELECT') {
+                const select = event.target;
+
+                // 找到該下拉選單所在的行
+                const row = select.closest('tr');
+
+                // 找到該下拉選單所在的列
+                const cell = select.closest('td');
+
+                // 獲取行索引和列索引
+                const rowIndex = row.rowIndex; // 表格中的行索引（包括表頭）
+                const cellIndex = cell.cellIndex; // 行中的列索引
+
+                console.log(`選單位於第 ${rowIndex} 行, 第 ${cellIndex + 1} 列`);
+                console.log(`選擇的值為: ${select.value}`);
+
+                //整個table的資料
+                const tableValue = document.getElementById('dataTable');
+                //從table的資料取出row的資料
+                const rowValue = tableValue.rows[rowIndex];
+                //從row的資料取出cell的資料，接著提取出裡面的文字內容並修整一下(trim)
+                //因為這邊的cellIndex是取下拉選單所在的行，也就是cells[7]
+                //而開始時間在cells[2]，所以是取cells[cellIndex-5]的值
+                const cellValue = rowValue.cells[cellIndex-5].textContent.trim();
+                // console.log(rowValue.cells[cellIndex-5].textContent.trim());
+                // console.log(rowValue.cells[cellIndex-4].textContent.trim());
+                // console.log(rowValue.cells[cellIndex-3].textContent.trim());
+                // console.log(rowValue.cells[cellIndex-2].textContent.trim());
+                // console.log(rowValue.cells[cellIndex-1].textContent.trim());
+                // console.log(`${select.value}`);
+
+                const userName = localStorage.getItem("username");
+                fetch(`http://localhost:8080/choose-tag/${encodeURIComponent(userName)}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        //取得該行的開始時間
+                        startTime: rowValue.cells[cellIndex-5].textContent.trim(),
+                        tag: `${select.value}`
+                    })
+                })
+                .then(reponse=> {
+                    console.log('分類已儲存:',reponse);
+                })
+                .catch(error => {
+                    console.error('儲存分類時出錯:', error);
+                });
+            }
+        });
 // -----------------------------------------------
         // 顯示圓餅圖功能
         // 獲取按鈕和視窗

@@ -63,6 +63,32 @@ public class TimeBlockDao {
 		return "已修改timeBlock";
 	}
 	
+	//用來選擇time_Block中的tag
+	public String chooseTag(TimeBlock timeBlock) {
+		//sql語法:根據account, start去修改
+		//該timeBlock的 end, duration, score, note
+		String sql = "UPDATE time_block SET tag = :timeBlockTag "
+					+ "WHERE  account = :timeBlockAccount AND start = :startTime";
+
+			//map變數是用來動態決定timeBlockAccount & timeBlockStart的
+			//記得先
+			//import java.util.Map; & import java.util.HashMap;
+			Map<String,Object> map = new HashMap<>();
+			//要用它來找timeBlock的變數
+			map.put("timeBlockAccount",timeBlock.getAccount());
+			map.put("startTime",timeBlock.getStartTime());
+
+			//要放入的變數
+			map.put("timeBlockTag",timeBlock.getTag());
+			
+			
+			//對資料庫執行sql語法，其中的timeBlockAccount & timeBlockStart
+			//套用map後的值
+			namedParameterJdbcTemplate.update(sql, map);
+					
+			return "已選擇Tag";
+		}
+	
 	//用來取得所有該帳號的時間戳記，回傳的類別為一個TimeBlock的list
 	public List<TimeBlock> checkByAccount(TimeBlock timeBlock){
 		//sql語法，動態決定timeBlockAccount & timeBlockStart變數

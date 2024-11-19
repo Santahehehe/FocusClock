@@ -20,6 +20,11 @@ public class TimeBlockService {
 		return timeBlockDao.revise_TimeBlock(timeBlock);
 	}
 	
+	//用來選擇time_Block中的tag
+	public String chooseTag(TimeBlock timeBlock) {
+		return timeBlockDao.chooseTag(timeBlock);
+	}
+	
 	//用來查看帳號的時間戳記
 	public TimeBlock checkByAccount(TimeBlock timeBlock) {
 		List<TimeBlock> timeBlocks = timeBlockDao.checkByAccount(timeBlock);
