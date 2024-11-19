@@ -777,13 +777,14 @@
             }
         });
 
-
+        //用來給圓餅圖分類的
+        let tagLabel=[];
         // 創建圓餅圖
         function createPieChart() {
             const data = {
                 labels: ['蘋果', '香蕉', '櫻桃', '葡萄'],
                 datasets: [{
-                    data: [70, 20, 25, 25],
+                    data: [70, 20, 25, 0],
                     backgroundColor: ['#FF5733', '#FFBD33', '#75FF33', '#33FF57'],
                     borderColor: ['#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF'],
                     borderWidth: 1

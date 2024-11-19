@@ -38,7 +38,7 @@ public class TimeBlockDao {
 		//sql語法:根據account, start去修改
 		//該timeBlock的 end, duration, score, note
 		String sql = "UPDATE time_block SET end = :endTime, duration = :durationTime,"
-				+ "score = :focusScore, note = :timeBlockNote "
+				+ "score = :focusScore, note = :timeBlockNote, tag = :timeBlockTag "
 				+ "WHERE  account = :timeBlockAccount AND start = :startTime";
 
 		//map變數是用來動態決定timeBlockAccount & timeBlockStart的
@@ -54,7 +54,8 @@ public class TimeBlockDao {
 		map.put("durationTime",timeBlock.getDuration());
 		map.put("focusScore",timeBlock.getFocusScore());
 		map.put("timeBlockNote",timeBlock.getNote());
-		
+		map.put("timeBlockTag",timeBlock.getTag());
+		System.out.println(timeBlock.getNote());
 		
 		//對資料庫執行sql語法，其中的timeBlockAccount & timeBlockStart
 		//套用map後的值

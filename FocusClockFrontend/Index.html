@@ -482,7 +482,8 @@
                     end: endTime.toLocaleString(),
                     duration: duration,
                     focusScore: focusScore,
-                    note: note
+                    note: note,
+                    tag: "未分類"
                 })
             })
             .then(reponse=> {
@@ -538,6 +539,12 @@
                 button.innerHTML = '&#9632; 停止'; //把計時按鈕改成停止圖示
             }
         };
+        window.addEventListener('pageshow', (event) => {
+            if (event.persisted) {
+                // 如果頁面是從快取加載的，執行重新載入
+                window.location.reload();
+        }
+});
     </script>
 </body>
 </html>

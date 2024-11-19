@@ -36,6 +36,7 @@ public class TimeBlockController {
 		//3.duration 4.focusScore 5.note
 		//再把前端放在url路徑的account放入timeBlock中
 		timeBlock.setAccount(account);
+		//System.out.println(timeBlock.getTag());
 		//接著就交給timeBlockService處理
 		return timeBlockService.revise_TimeBlock(timeBlock);
 	}
