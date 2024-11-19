@@ -209,7 +209,7 @@
                 const rowsPerPage = 100;
                 //用來存pageData
                 let pageData = [];
-                let categories = ["分類 1", "分類 2", "分類 3"];
+                let categories = [];
 
 
                 //讓修改分類的oldCategoryInput變成下拉式選單
@@ -234,7 +234,66 @@
                 
                 //取得該帳號所有的Tag種類
                 function fetchCategories(){
-                    
+                    const userName = localStorage.getItem("username");
+                    //把登入者資料用參數的方式加入到要請求的url地址
+                    const apiUrl = `http://localhost:8080/searchTag/${encodeURIComponent(userName)}`;
+                    //console.log(apiUrl);
+                    //用account名稱和startTime去找對應的時間戳記並更改end, duration, focusScore, note
+                    fetch(apiUrl, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    //把回應解析為JSON
+                    .then(response => response.json())
+                    .then(data => {
+                        //把取得的data印在控制台
+                        //console.log(data);
+                        //設一個timeBlockLists變數來存 data(回傳object)中的timeBlock列表
+                        const categoriesList = data.categoriesList;
+                        //用totalCount變數來了解回傳的list資料量
+                        const totalCount = data.categoriesList.length;
+                        console.log("回傳資料有"+totalCount+"筆");
+                        
+                        // //把總筆數/一個頁面可容納筆數來算出需要幾個頁面
+                        // totalPages = Math.ceil(totalCount / rowsPerPage);
+                        
+                        //準備要顯示的資料:把timeBlock列表分成一個個timeBlock push到pageData
+                        categoriesList.forEach(category =>{
+                            //console.log(`${timeBlock.account}`);
+                            //console.log(`${timeBlock.end}`);
+                            //console.log(`${timeBlock.tag}`);
+                            categories.push(
+                                `${category.tag_name}`.toString()
+                            );
+                            //印出現在的categories
+                            //console.log("載入資料後的分類表"+categories);
+
+
+                            // 重新生成修改分類選單
+                            const oldCategoryInput = document.getElementById("oldCategoryInput");
+                            const selectHTML = `
+                                <select class="category-select" id='dynamic-oldCategory'>
+                                    <!-- 根據 categories 動態生成選項 -->
+                                        ${categories.map(cat => `<option value="${cat}">${cat}</option>`).join('')}
+                                </select>
+                            `
+                            oldCategoryInput.innerHTML = selectHTML;
+                            //重新生成刪除選單
+                            const categoryToDeleteInput = document.getElementById("categoryToDeleteInput");
+                            const categoryToDeleteInputHTML = `
+                                <select class="category-select" id='dynamic-DeleteCategory'>
+                                    <!-- 根據 categories 動態生成選項 -->
+                                    ${categories.map(cat => `<option value="${cat}">${cat}</option>`).join('')}
+                                </select>
+                            `
+                            categoryToDeleteInput.innerHTML = categoryToDeleteInputHTML;
+                            //把更新的資料渲染Table
+                            //console.log(pageData);
+                            renderTable(pageData);
+                        });
+                    });
                 }
 
                 // 新增分類功能
@@ -412,7 +471,7 @@
                 function fetchData(page = 1) {
                     //取得登入者資料
                     const userName = localStorage.getItem("username");
-                    console.log(userName);
+                    //console.log(userName);
                     //設一個timeBlockLists變數來存 data中的timeBlock列表
                     let timeBlockLists;
                     //用totalCount變數來了解回傳的list資料量
@@ -422,7 +481,7 @@
                     
                     //把登入者資料用參數的方式加入到要請求的url地址
                     const apiUrl = `http://localhost:8080/checkTimeBlock/${encodeURIComponent(userName)}`;
-                    console.log(apiUrl);
+                    //console.log(apiUrl);
                     //用account名稱和startTime去找對應的時間戳記並更改end, duration, focusScore, note
                     fetch(apiUrl, {
                         method: 'GET',
@@ -434,7 +493,7 @@
                     .then(response => response.json())
                     .then(data => {
                         //把取得的data印在控制台
-                        console.log(data);
+                        //console.log(data);
                         //設一個timeBlockLists變數來存 data(回傳object)中的timeBlock列表
                         timeBlockLists = data.timeBlockList;
                         //用totalCount變數來了解回傳的list資料量
@@ -456,7 +515,7 @@
                                 col4: `${timeBlock.duration}`,
                                 col5: `${timeBlock.focusScore}`,
                                 col6: `${timeBlock.note}`,
-                                category: categories[5 % categories.length]
+                                category: ''
                             });
                         });
 
@@ -472,7 +531,7 @@
 
                 //渲染table
                 function renderTable(pageData) {
-                    console.log("跑renderTable()");
+                    //console.log("跑renderTable()");
                     const tableBody = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
                     tableBody.innerHTML = ''; // 清空表格內容
                     let i =1;//用來顯示資料量
@@ -490,7 +549,7 @@
                             <td>
                                 <select class="category-select">
                                     <!--添加默認選項 "未分類"-->
-                                    <option value="" ${item.category && !categories.includes(item.category) ? 'selected' : ''}>未分類</option>
+                                    <option value="未分類" ${item.category && !categories.includes(item.category) ? 'selected' : ''}>未分類</option>
                                     ${categories.map(cat => `<option value="${cat}" ${cat === item.category ? 'selected' : ''}>${cat}</option>`).join('')}
                                 </select>
                             </td>
@@ -527,16 +586,36 @@
                     const searchInput = document.getElementById('searchInput').value.toLowerCase();
                     const table = document.getElementById('dataTable');
                     const rows = table.getElementsByTagName('tr');
+                    //console.log("tr的長度"+rows.length);
                     
+                    //根據tr的長度去看要做幾round(看有幾個row)
+                    //從1開始跑(0是表頭)
                     for (let i = 1; i < rows.length; i++) {
+                        
+                        //對8個欄位去做尋找
                         const cells = rows[i].getElementsByTagName('td');
+                        //console.log(cells);
                         let found = false;
-                        for (let j = 0; j < cells.length - 1; j++) { // 最後一欄是下拉選單
-                            if (cells[j].textContent.toLowerCase().includes(searchInput)) {
+                        for (let j = 0; j < cells.length; j++) {
+                            //下拉式選單欄位的檢查方法
+                            if(cells[j].getElementsByTagName('select').length >0){
+                                //console.log("搜尋字串:"+searchInput);
+                                //console.log('選擇選項'+cells[j].getElementsByTagName('select')[0].value.toLowerCase());
+                                //用來抓取在欄位中選擇的選項
+                                let selectedOption = cells[j].getElementsByTagName('select')[0].value.toLowerCase();
+                                //console.log('selectedOption值:'+selectedOption.includes(searchInput));
+                                if (selectedOption.includes(searchInput)) {
+                                    found = true;
+                                }
+                            }
+                            //文字的檢查方法
+                            else if (cells[j].textContent.toLowerCase().includes(searchInput)) {
                                 found = true;
                                 break;
                             }
                         }
+                        //console.log('該行found:'+found);
+                        //found = true就印出來
                         rows[i].style.display = found ? '' : 'none';
                     }
                     //把搜尋欄位清空
@@ -561,14 +640,14 @@
                         //取得現在日期時間
                     const today = new Date();
                         //僅保留年月日部分
-                    console.log("今天日期"+today.toLocaleString());
+                    //console.log("今天日期"+today.toLocaleString());
                     const datePart = (today.toLocaleString()).split(' ')[0];
                         //把search欄位值設定為日期部分
                     document.getElementById('searchInput').value = datePart;
                     //console.log(document.getElementById('searchInput').value);
 
                     //取得所有分類標籤並放入分類表變數
-                    fetchTag();
+                    fetchCategories();
                 };
 
                 // 格式化時間(把second format成 00:00:00)
