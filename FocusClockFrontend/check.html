@@ -141,6 +141,8 @@
 <body>
     <!-- 用來裝右側按鈕的容器 -->
     <div class="right-container">
+        <!-- 日曆 -->
+        <input type="date" id="theDate" name="myDate">
         <!-- 顯示今日圓餅圖 按鈕 -->
         <button id="openModalBtn">今日圓餅圖</button>
         <!-- 右側選單展開按鈕 -->
@@ -188,6 +190,8 @@
         <div id="categoryToDeleteInput"></div>
         <button onclick="deleteCategory()">刪除分類</button>
     </div>
+
+
 
     <!-- 表格 -->
     <table id="dataTable">
@@ -769,18 +773,24 @@
         // 當按下關閉按鈕時，隱藏視窗
         closeBtn.addEventListener('click', function() {
             modal.style.display = 'none'; // 隱藏視窗
+            myChart.destroy();
         });
         
         // 點擊非 圓餅圖視窗區域時，隱藏圓餅圖視窗
         document.addEventListener('click', function(event) {
             if (!modal.contains(event.target) && event.target !== openModalBtn) {
                 modal.style.display = 'none';
+                myChart.destroy();
             }
         });
 
-        
+        //用來儲存圖表實例
+        let myChart;
+
         // 創建圓餅圖
         function createPieChart() {
+            
+            // window.location.reload();
             //用來給圓餅圖分類的
             let tagLabels=['未分類'];
             tagLabels.push(...categories);
@@ -794,8 +804,9 @@
                 console.log(tagLabel);
                 const userName = localStorage.getItem("username");
                 console.log(userName);
-                const today = new Date();
-                console.log((today.toLocaleString()).split(' ')[0]);
+                // console.log(document.getElementById("theDate").value);
+                //要畫圖的日期
+                // const searchday = 
                 return fetch(`http://localhost:8080/getTotalDurationOfTag/${encodeURIComponent(userName)}`, {
                     method: 'POST',
                     headers: {
@@ -803,7 +814,7 @@
                     },
                     body: JSON.stringify({
                         //取得該行的開始時間
-                        startTime: (today.toLocaleString()).split(' ')[0],
+                        startTime: document.getElementById("theDate").value.replace(/-/g, "/"),
                         tag: tagLabel
                     })
                 })
@@ -883,7 +894,7 @@
                     }
                 };
 
-                new Chart(ctx, {
+                myChart = new Chart(ctx, {
                     type: 'pie',
                     data: data,
                     options: options
@@ -891,11 +902,10 @@
             });
         }
 
-
+        // 隨機產生顏色function
         function generateColors(count) {
             return Array(count).fill().map(() => getRandomColor()); // 可以切換到其他顏色生成函數
         }
-
         function getRandomColor() {
             const r = Math.floor(Math.random() * 256); // 隨機生成 0~255
             const g = Math.floor(Math.random() * 256);
@@ -904,6 +914,12 @@
         }
 
 
+        // document.getElementById("theDate").addEventListener("change", function() {
+        //                             // 取得選中的日期
+        //                             const selectedDate = (this.value).replace(/-/g, "/");
+        //                             console.log(selectedDate);
+        //                             localStorage.setItem("searchDate",selectedDate);
+        //                         });
     </script>
 </body>
 </html>
