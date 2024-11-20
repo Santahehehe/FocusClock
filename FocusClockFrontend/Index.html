@@ -539,6 +539,8 @@
                 button.innerHTML = '&#9632; 停止'; //把計時按鈕改成停止圖示
             }
         };
+        
+        //按上一頁時會重新載入index.html以確保碼表時間正確
         window.addEventListener('pageshow', (event) => {
             if (event.persisted) {
                 // 如果頁面是從快取加載的，執行重新載入

@@ -55,7 +55,7 @@ public class TimeBlockDao {
 		map.put("focusScore",timeBlock.getFocusScore());
 		map.put("timeBlockNote",timeBlock.getNote());
 		map.put("timeBlockTag",timeBlock.getTag());
-		System.out.println(timeBlock.getNote());
+		//System.out.println(timeBlock.getNote());
 		
 		//對資料庫執行sql語法，其中的timeBlockAccount & timeBlockStart
 		//套用map後的值
@@ -102,4 +102,30 @@ public class TimeBlockDao {
 		
 		return list;
 	}
+	
+	//用來根據今天日期提取某tag的總時間
+	public TimeBlock getTotalDurationOfTag(TimeBlock timeBlock) {
+		//sql語法，動態決定timeBlockAccount & timeBlockStart變數
+		String sql = "SELECT SUM(duration) AS duration,tag FROM time_block "
+					+ "WHERE start LIKE :date "
+					+ "AND tag= :searchTag AND account = :searchAccount";
+						
+		Map<String, Object> map = new HashMap<>();
+		map.put("date", (timeBlock.getStartTime())+"%");
+		map.put("searchTag", timeBlock.getTag());
+		map.put("searchAccount", timeBlock.getAccount());
+		//RowMapper改用TotalDurationRowmmper
+		TimeBlock totalDuration = namedParameterJdbcTemplate.queryForObject(sql, map, new TotalDurationRowMapper());
+				
+		return totalDuration;
+		
+		
+		
+	}
+	
+	
+	
+	
+	
+	
 }

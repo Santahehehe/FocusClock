@@ -42,17 +42,17 @@ public class TimeBlockController {
 	}
 	
 	//接受Put請求做選擇tag的動作
-		@PutMapping("/choose-tag/{account}")
-		public String chooseTag(@PathVariable String account,
-								@RequestBody TimeBlock timeBlock) {
-			//RequestBody中已經包含
-			//1.startTime(用來找對應的TimeBlock) 2.endTime 
-			//3.duration 4.focusScore 5.note
-			//再把前端放在url路徑的account放入timeBlock中
-			timeBlock.setAccount(account);
-			//接著就交給timeBlockService處理
-			return timeBlockService.chooseTag(timeBlock);
-		}
+	@PutMapping("/choose-tag/{account}")
+	public String chooseTag(@PathVariable String account,
+							@RequestBody TimeBlock timeBlock) {
+		//RequestBody中已經包含
+		//1.startTime(用來找對應的TimeBlock) 2.endTime 
+		//3.duration 4.focusScore 5.note
+		//再把前端放在url路徑的account放入timeBlock中
+		timeBlock.setAccount(account);
+		//接著就交給timeBlockService處理
+		return timeBlockService.chooseTag(timeBlock);
+	}
 	
 	@RequestMapping("/")
 	public String hello() {
@@ -66,6 +66,19 @@ public class TimeBlockController {
 		timeBlock.setAccount(account);
 		//會回傳TimeBlock的timeBlockList變數(一串timeBlock所形成的list)
 		return timeBlockService.checkByAccount(timeBlock);
+	}
+	
+	
+	//接受post請求根據今天日期提取某tag的總時間
+	@PostMapping("/getTotalDurationOfTag/{account}")
+	//用一個TimeBlock類別的物件去接前端傳過來要查詢的資料
+	public TimeBlock getTotalDurationOfTag(@PathVariable String account,
+										@RequestBody TimeBlock timeBlock) {
+		timeBlock.setAccount(account);
+		
+		//System.out.println(timeBlock.getTag());
+		//System.out.println(timeBlockService.getTotalDurationOfTag(timeBlock).getDuration());
+		return timeBlockService.getTotalDurationOfTag(timeBlock);
 	}
 	
 }

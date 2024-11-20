@@ -665,6 +665,7 @@
 
     <!-- 導入圓餅圖功能 -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
     
     <script>
         
@@ -757,7 +758,7 @@
         const openModalBtn = document.getElementById('openModalBtn');
         const modal = document.getElementById('myModal');
         const closeBtn = document.getElementById('closeBtn');
-        const ctx = document.getElementById('myPieChart').getContext('2d');
+        
 
         // 當按下顯示圓餅圖的按鈕時
         openModalBtn.addEventListener('click', function() {
@@ -777,38 +778,129 @@
             }
         });
 
-        //用來給圓餅圖分類的
-        let tagLabel=[];
+        
         // 創建圓餅圖
         function createPieChart() {
-            const data = {
-                labels: ['蘋果', '香蕉', '櫻桃', '葡萄'],
-                datasets: [{
-                    data: [70, 20, 25, 0],
-                    backgroundColor: ['#FF5733', '#FFBD33', '#75FF33', '#33FF57'],
-                    borderColor: ['#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF'],
-                    borderWidth: 1
-                }]
-            };
+            //用來給圓餅圖分類的
+            let tagLabels=['未分類'];
+            tagLabels.push(...categories);
+            console.log(tagLabels);
 
-            const options = {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'top',
+            //用來提供圖表的資料
+            let chartTag=[];
+            let chartData=[];
+
+            let fetchPromises = tagLabels.map(tagLabel => {
+                console.log(tagLabel);
+                const userName = localStorage.getItem("username");
+                console.log(userName);
+                const today = new Date();
+                console.log((today.toLocaleString()).split(' ')[0]);
+                return fetch(`http://localhost:8080/getTotalDurationOfTag/${encodeURIComponent(userName)}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
                     },
-                    tooltip: {
-                        enabled: true
+                    body: JSON.stringify({
+                        //取得該行的開始時間
+                        startTime: (today.toLocaleString()).split(' ')[0],
+                        tag: tagLabel
+                    })
+                })
+                .then(response =>response.json())
+                .then(data=> {
+                    //只顯示有資料的分類
+                    if(data.tag!==null&&data.duration!==null){
+                        chartTag.push(data.tag);
+                        chartData.push(((data.duration)/3600).toFixed(2));
+                        // chartData.push(((data.duration)));
+                        console.log("chartTag:"+chartTag);
+                        console.log("chartData:"+chartData);
                     }
-                }
-            };
+                    // else{
+                    //     chartTag.push(tagLabel);
+                    //     chartData.push(0);
+                    //     console.log("chartTag:"+chartTag);
+                    //     console.log("chartData:"+chartData);
+                    // }
+                    
+                })
+                .catch(error => {
+                    console.error('載入分類時間出錯:', error);
+                });
+            })
 
-            new Chart(ctx, {
-                type: 'pie',
-                data: data,
-                options: options
+            //因為fetch是非同步執行
+            Promise.all(fetchPromises)
+            .then(() => {
+                const ctx = document.getElementById('myPieChart').getContext('2d');
+                Chart.register(ChartDataLabels);
+
+                console.log(chartTag);
+                console.log(typeof(chartData[0]));
+                chartData = chartData.map(element => parseFloat(element));
+
+                const data = {
+                labels: chartTag,
+                    datasets: [{
+                        data: chartData,
+                        backgroundColor: generateColors(chartData.length),
+                        borderColor: ['#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF','#FFFFFF'],
+                        borderWidth: 1
+                    }]
+                };
+
+                const options = {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: (tooltipItem) => {
+                                    return `${tooltipItem.raw} hr`; // 自訂義單位
+                                }
+                            }
+                        },
+                        datalabels: {
+                            formatter: function(value, ctx) {
+                                let total = ctx.dataset.data.reduce((acc, val) => acc + val, 0);
+                                console.log(value);
+                                console.log(total);
+                                let percentage = (value / total * 100).toFixed(2) + '%';
+                                return percentage;
+                            },
+                            color: '#fff',
+                            font: {
+                                weight: 'bold',
+                                size: 14
+                            },
+                            anchor: 'center',
+                            align: 'center'
+                        }
+                    }
+                };
+
+                new Chart(ctx, {
+                    type: 'pie',
+                    data: data,
+                    options: options
+                });
             });
+        }
+
+
+        function generateColors(count) {
+            return Array(count).fill().map(() => getRandomColor()); // 可以切換到其他顏色生成函數
+        }
+
+        function getRandomColor() {
+            const r = Math.floor(Math.random() * 256); // 隨機生成 0~255
+            const g = Math.floor(Math.random() * 256);
+            const b = Math.floor(Math.random() * 256);
+            return `rgb(${r}, ${g}, ${b})`;
         }
 
 

@@ -35,4 +35,12 @@ public class TimeBlockService {
 		return result;
 	}
 	
+	//用來根據今天日期提取某tag的總時間
+	public TimeBlock getTotalDurationOfTag(TimeBlock timeBlock) {
+		return timeBlockDao.getTotalDurationOfTag(timeBlock);
+	}
+	
+	
+	
+	
 }
