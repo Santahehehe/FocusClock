@@ -11,9 +11,12 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("http://localhost:3000")  // 允許來自 http://localhost:3000 的請求
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")  // 許可的 HTTP 方法
+//                .allowedOrigins("http://localhost:3000")  // 允許來自 http://localhost:3000 的請求
+                //允許所有來源的請求
+        		.allowedOrigins("*")
+        		.allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")  // 許可的 HTTP 方法
                 .allowedHeaders("*")  // 允許的請求標頭
-                .allowCredentials(true);  // 允許攜帶 Cookie
+                //.allowCredentials(true);  // 允許攜帶 Cookie
+        		.allowCredentials(false);
     }
 }

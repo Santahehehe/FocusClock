@@ -351,7 +351,7 @@
                     button.classList.add('active');//把toggleButton變成toggleButton.active以啟動CSS改變計時按鈕樣式
                     button.innerHTML = '&#9632; 停止'; //把計時按鈕改成停止圖示
                     // 用Post請求發送到後端以在focustime資料庫的time table建立新的data row(時間戳記)
-                    fetch('http://localhost:8080/save-time', {
+                    fetch('http://192.168.1.2:8080/save-time', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -465,7 +465,7 @@
             const userName = localStorage.getItem("username");
             console.log(userName);
             //把登入者資料用參數的方式加入到要請求的url地址
-            const apiUrl = `http://localhost:8080/save-time/${encodeURIComponent(userName)}`;
+            const apiUrl = `http://192.168.1.2:8080/save-time/${encodeURIComponent(userName)}`;
             console.log(apiUrl);
             
             //用account名稱和startTime去找對應的時間戳記並更改end, duration, focusScore, note

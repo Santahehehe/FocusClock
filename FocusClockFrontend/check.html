@@ -240,7 +240,7 @@
                 function fetchCategories(){
                     const userName = localStorage.getItem("username");
                     //把登入者資料用參數的方式加入到要請求的url地址
-                    const apiUrl = `http://localhost:8080/searchTag/${encodeURIComponent(userName)}`;
+                    const apiUrl = `http://192.168.1.2:8080/searchTag/${encodeURIComponent(userName)}`;
                     //console.log(apiUrl);
                     //用account名稱和startTime去找對應的時間戳記並更改end, duration, focusScore, note
                     fetch(apiUrl, {
@@ -314,7 +314,7 @@
                             const username = localStorage.getItem('username');
                             
                             //用post請求呼叫新增tag的api
-                            fetch('http://localhost:8080/add-tag', {
+                            fetch('http://192.168.1.2:8080/add-tag', {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json'
@@ -484,7 +484,7 @@
                     let totalPages;
                     
                     //把登入者資料用參數的方式加入到要請求的url地址
-                    const apiUrl = `http://localhost:8080/checkTimeBlock/${encodeURIComponent(userName)}`;
+                    const apiUrl = `http://192.168.1.2:8080/checkTimeBlock/${encodeURIComponent(userName)}`;
                     //console.log(apiUrl);
                     //用account名稱和startTime去找對應的時間戳記並更改end, duration, focusScore, note
                     fetch(apiUrl, {
@@ -737,7 +737,7 @@
                 // console.log(`${select.value}`);
 
                 const userName = localStorage.getItem("username");
-                fetch(`http://localhost:8080/choose-tag/${encodeURIComponent(userName)}`, {
+                fetch(`http://192.168.1.2:8080/choose-tag/${encodeURIComponent(userName)}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json'
@@ -807,7 +807,7 @@
                 // console.log(document.getElementById("theDate").value);
                 //要畫圖的日期
                 // const searchday = 
-                return fetch(`http://localhost:8080/getTotalDurationOfTag/${encodeURIComponent(userName)}`, {
+                return fetch(`http://192.168.1.2:8080/getTotalDurationOfTag/${encodeURIComponent(userName)}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
